@@ -1,0 +1,4 @@
+node_modules/
+shakas.db
+.env
+.DS_Store
