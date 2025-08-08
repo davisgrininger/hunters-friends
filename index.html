@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hunter's Friends - Send a Shaka! 🤙</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #1a1a2e 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #667eea, #764ba2, #f093fb);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        h1 {
+            font-family: 'Orbitron', monospace;
+            font-weight: 900;
+            font-size: 3.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5), 2px 2px 4px rgba(0,0,0,0.3);
+            animation: bounce 2s ease-in-out infinite;
+            letter-spacing: 2px;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .subtitle {
+            font-family: 'Exo 2', sans-serif;
+            font-weight: 300;
+            font-size: 1.4em;
+            opacity: 0.9;
+            letter-spacing: 1px;
+        }
+
+
+
+        .map-container {
+            position: relative;
+            height: 500px;
+            margin: 20px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .controls {
+            padding: 30px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(10px);
+        }
+
+        .message-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px 20px;
+            margin: 20px auto;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-family: 'Exo 2', sans-serif;
+            font-size: 1.1em;
+            text-align: center;
+            transition: all 0.3s ease;
+            display: block;
+        }
+
+        .message-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+            font-style: italic;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: rgba(102, 126, 234, 0.8);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .char-counter {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 5px;
+            font-family: 'Exo 2', sans-serif;
+        }
+
+        .char-counter.warning {
+            color: #ffa500;
+        }
+
+        .char-counter.error {
+            color: #ff6b6b;
+        }
+
+        .hunter-image {
+            width: 100%;
+            max-width: 300px;
+            height: 400px;
+            border-radius: 20px;
+            border: 3px solid rgba(102, 126, 234, 0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            object-fit: cover;
+        }
+
+        .hunter-image:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .shaka-button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.8em;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .shaka-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.6);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+
+        .shaka-button:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .shaka-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            transition: all 0.5s ease;
+            transform: translate(-50%, -50%);
+        }
+
+        .shaka-button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .shaka-button span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-family: 'Exo 2', sans-serif;
+            font-weight: 400;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .status.success {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+            border: 2px solid rgba(40, 167, 69, 0.4);
+        }
+
+        .status.error {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            border: 2px solid rgba(220, 53, 69, 0.4);
+        }
+
+        .status.info {
+            background: rgba(23, 162, 184, 0.2);
+            color: #17a2b8;
+            border: 2px solid rgba(23, 162, 184, 0.4);
+        }
+
+        .about-section {
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 25%, #16213e 50%, #0f3460 100%);
+            color: white;
+            padding: 50px 30px;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .about-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .about-section h2 {
+            text-align: center;
+            font-family: 'Orbitron', monospace;
+            font-weight: 900;
+            font-size: 3em;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .about-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            align-items: start;
+        }
+
+        .about-text {
+            font-family: 'Exo 2', sans-serif;
+            font-weight: 300;
+            font-size: 1.3em;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+
+        .about-text p {
+            margin-bottom: 20px;
+            opacity: 0.95;
+        }
+
+        .fun-facts {
+            background: rgba(255,255,255,0.05);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .fun-facts h3 {
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .fun-facts ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .fun-facts li {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            opacity: 0.9;
+            font-family: 'Exo 2', sans-serif;
+            font-weight: 300;
+        }
+
+        .about-images {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .image-placeholder {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            backdrop-filter: blur(20px);
+            border: 2px dashed rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .image-placeholder:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-5px);
+            border-color: rgba(102, 126, 234, 0.5);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .placeholder-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .image-placeholder p {
+            margin: 0;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .footer {
+            background: linear-gradient(45deg, #0c0c0c, #1a1a2e, #16213e);
+            color: white;
+            padding: 40px 0 20px 0;
+            margin-top: 0;
+            position: relative;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(118, 75, 162, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+
+        .footer-section {
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-section h4 {
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            color: #667eea;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .footer-section p {
+            opacity: 0.9;
+            line-height: 1.6;
+            font-family: 'Exo 2', sans-serif;
+            font-weight: 300;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            opacity: 0.8;
+            position: relative;
+            z-index: 1;
+            font-family: 'Exo 2', sans-serif;
+            font-weight: 300;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .shaka-popup {
+            text-align: center;
+            font-size: 1.2em;
+            font-family: 'Exo 2', sans-serif;
+            font-weight: 400;
+        }
+
+        .shaka-emoji {
+            font-size: 2em;
+            animation: wave 2s ease-in-out infinite;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-20deg); }
+            75% { transform: rotate(20deg); }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .map-container {
+                height: 400px;
+                margin: 10px;
+            }
+            
+            .shaka-button {
+                font-size: 1.5em;
+                padding: 15px 30px;
+            }
+            
+            .about-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .about-section {
+                padding: 30px 20px;
+            }
+            
+            .about-section h2 {
+                font-size: 2.5em;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤙 Hunter's Friends 🤙</h1>
+        </div>
+
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+
+        <div class="controls">
+            <input 
+                type="text" 
+                id="shakaMessage" 
+                class="message-input" 
+                placeholder="Add a fun message with your shaka!"
+                maxlength="50"
+            >
+            <div class="char-counter" id="charCounter">0/50 characters</div>
+            
+            <button class="shaka-button" id="shakaButton">
+                <span>🤙 Send One Shaka! 🤙</span>
+            </button>
+            <div class="status" id="status" style="display: none;"></div>
+        </div>
+        
+        <div class="about-section">
+            <h2>Who is Hunter? </h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <p>Meet Hunter, Hunter loves making new friends from around the world and spreading the aloha spirit!</p>
+                    
+                    <p>Hunter enjoys taekwondo🥋, hockey🏒 , baseball⚾️, basketball🏀, robotics🤖, hiking🥾, off-roading👣, surfing 🏄‍♂️, going to the zoo🐒 and sharing smiles with everyone he meets!</p>
+                    
+                    <p>This website is Hunter's place where he can see all the amazing locations where his friends have been. Every 🤙 on the map represents one of Hunter's friends that is spreading the aloha spirit!</p>
+                    
+            
+                </div>
+                
+                <div class="about-images">
+                    <img src="hunter-photo2.jpg" alt="Hunter's Photo" class="hunter-image" onerror="this.style.display='none';">
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>🤙 Hunter's Friends</h4>
+                <p>Spreading aloha around the world, one shaka at a time!</p>
+            </div>
+            <div class="footer-section">
+                <h4>🌊 Connect</h4>
+                <p>Send a shaka and join the global friendship map!</p>
+            </div>
+
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 Hunter's Friends | Made by Uncle Chico</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script>
+        class ShakaMap {
+            constructor() {
+                this.map = null;
+                this.shakas = [];
+                this.socket = null;
+                this.init();
+            }
+
+            init() {
+                this.initMap();
+                this.initSocket();
+                this.loadShakas();
+                this.setupEventListeners();
+                this.showStatus('🤙 Ready to send shakas! Click the button to use your GPS location!', 'info');
+            }
+
+            initMap() {
+                // Initialize map centered on Hawaii (perfect for a shaka theme!)
+                this.map = L.map('map').setView([21.3099, -157.8581], 3);
+
+                // Add OpenStreetMap tiles
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(this.map);
+            }
+
+            initSocket() {
+                this.socket = io();
+
+                this.socket.on('connect', () => {
+                    console.log('🤙 Connected to server');
+                });
+
+                this.socket.on('disconnect', () => {
+                    console.log('👋 Disconnected from server');
+                });
+
+                this.socket.on('new-shaka', (shaka) => {
+                    console.log('🤙 New shaka received:', shaka);
+                    this.addShakaToMap(shaka);
+                    this.shakas.push(shaka);
+                    
+                    // Show notification for new shakas (not from current user)
+                    if (shaka.id !== this.lastShakaId) {
+                        this.showStatus(`🤙 New shaka from ${shaka.locationName}!`, 'success');
+                    }
+                });
+            }
+
+
+
+            async loadShakas() {
+                try {
+                    const response = await fetch('/api/shakas');
+                    if (!response.ok) throw new Error('Failed to load shakas');
+                    
+                    this.shakas = await response.json();
+                    this.shakas.forEach(shaka => {
+                        this.addShakaToMap(shaka);
+                    });
+                    
+                    console.log(`🤙 Loaded ${this.shakas.length} existing shakas`);
+                } catch (error) {
+                    console.error('Error loading shakas:', error);
+                    this.showStatus('⚠️ Could not load existing shakas', 'error');
+                }
+            }
+
+            setupEventListeners() {
+                document.getElementById('shakaButton').addEventListener('click', () => {
+                    this.sendShaka();
+                });
+
+                // Message input character counter and profanity filter
+                const messageInput = document.getElementById('shakaMessage');
+                const charCounter = document.getElementById('charCounter');
+                
+                messageInput.addEventListener('input', (e) => {
+                    const length = e.target.value.length;
+                    charCounter.textContent = `${length}/50 characters`;
+                    
+                    if (length > 40) {
+                        charCounter.className = 'char-counter warning';
+                    } else if (length === 50) {
+                        charCounter.className = 'char-counter error';
+                    } else {
+                        charCounter.className = 'char-counter';
+                    }
+
+                    // Filter inappropriate content
+                    e.target.value = this.filterInappropriateContent(e.target.value);
+                });
+            }
+
+            filterInappropriateContent(text) {
+                // Kid-friendly content filter - blocks common inappropriate words
+                const inappropriateWords = [
+                    'stupid', 'dumb', 'hate', 'shut up', 'shutup', 'idiot', 'loser', 'sucks',
+                    'damn', 'hell', 'crap', 'poop', 'fart', 'butt', 'pee', 'gross',
+                    // Add more as needed, but keep it age-appropriate for 7-year-olds
+                ];
+                
+                let filteredText = text;
+                inappropriateWords.forEach(word => {
+                    const regex = new RegExp(word, 'gi');
+                    filteredText = filteredText.replace(regex, '***');
+                });
+                
+                return filteredText;
+            }
+
+            sendShaka() {
+                const button = document.getElementById('shakaButton');
+                button.innerHTML = '<span><div class="loading"></div>Getting your location...</span>';
+                
+                this.showStatus('📍 Requesting your GPS location...', 'info');
+                
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const coords = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude
+                            };
+                            this.processShakaRequest(coords);
+                        },
+                        (error) => {
+                            button.innerHTML = '<span>🤙 Send One Shaka! 🤙</span>';
+                            let errorMessage = '';
+                            switch(error.code) {
+                                case error.PERMISSION_DENIED:
+                                    errorMessage = '📍 Location permission denied. Please enable location access and try again!';
+                                    break;
+                                case error.POSITION_UNAVAILABLE:
+                                    errorMessage = '📍 Location unavailable. Please check your GPS settings!';
+                                    break;
+                                case error.TIMEOUT:
+                                    errorMessage = '📍 Location request timed out. Please try again!';
+                                    break;
+                                default:
+                                    errorMessage = '📍 Unable to get your location. Please try again!';
+                                    break;
+                            }
+                            this.showStatus(errorMessage, 'error');
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 10000,
+                            maximumAge: 300000
+                        }
+                    );
+                } else {
+                    button.innerHTML = '<span>🤙 Send One Shaka! 🤙</span>';
+                    this.showStatus('📱 GPS not supported on this device. Please use a device with location services!', 'error');
+                }
+            }
+
+            async processShakaRequest(coords) {
+                const button = document.getElementById('shakaButton');
+                const messageInput = document.getElementById('shakaMessage');
+                const message = messageInput.value.trim() || null;
+                
+                // Add privacy protection - randomly offset coordinates within ~0.01 degrees (roughly 1km)
+                const privacyOffset = 0.005; // ~500 meters
+                const protectedCoords = {
+                    lat: coords.lat + (Math.random() - 0.5) * privacyOffset,
+                    lng: coords.lng + (Math.random() - 0.5) * privacyOffset
+                };
+                
+                button.innerHTML = '<span><div class="loading"></div>Sending shaka...</span>';
+
+                try {
+                    const locationName = this.getLocationName(coords.lat, coords.lng);
+                    
+                    const response = await fetch('/api/shakas', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            latitude: protectedCoords.lat,
+                            longitude: protectedCoords.lng,
+                            locationName: locationName,
+                            message: message
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Server error: ${response.statusText}`);
+                    }
+
+                    const newShaka = await response.json();
+                    this.lastShakaId = newShaka.id; // Track our own shaka
+                    
+                    button.innerHTML = '<span>🤙 Send One Shaka! 🤙</span>';
+                    messageInput.value = ''; // Clear the message
+                    document.getElementById('charCounter').textContent = '0/50 characters';
+                    document.getElementById('charCounter').className = 'char-counter';
+                    
+                    this.showStatus('🤙 Shaka sent successfully! Aloha! 🌺', 'success');
+
+                    // Zoom to the new shaka (use original coords for centering)
+                    this.map.setView([coords.lat, coords.lng], Math.max(this.map.getZoom(), 8));
+
+                } catch (error) {
+                    console.error('Error sending shaka:', error);
+                    button.innerHTML = '<span>🤙 Send One Shaka! 🤙</span>';
+                    this.showStatus('❌ Failed to send shaka. Please try again!', 'error');
+                }
+            }
+
+            addShakaToMap(shaka) {
+                const shakaIcon = L.divIcon({
+                    className: 'shaka-marker',
+                    html: '<div style="font-size: 24px; text-align: center;">🤙</div>',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                });
+
+                const marker = L.marker([shaka.lat, shaka.lng], { icon: shakaIcon }).addTo(this.map);
+                
+                const timeAgo = this.getTimeAgo(shaka.timestamp);
+                const messageDisplay = shaka.message ? `<br><em>"${shaka.message}"</em>` : '';
+                
+                marker.bindPopup(`
+                    <div class="shaka-popup">
+                        <div class="shaka-emoji">🤙</div>
+                        <strong>Shaka from ${shaka.locationName || 'Unknown Location'}!</strong>${messageDisplay}<br>
+                        <small>${timeAgo}</small>
+                    </div>
+                `);
+            }
+
+            getLocationName(lat, lng) {
+                // Simple location naming based on coordinates
+                const locations = [
+                    { name: "Hawaii", lat: 21.3, lng: -157.8, radius: 5 },
+                    { name: "California", lat: 36.7, lng: -119.4, radius: 8 },
+                    { name: "Australia", lat: -25, lng: 140, radius: 15 },
+                    { name: "Japan", lat: 36, lng: 140, radius: 8 },
+                    { name: "New Zealand", lat: -41, lng: 174, radius: 8 },
+                    { name: "Brazil", lat: -14, lng: -51, radius: 15 },
+                    { name: "United Kingdom", lat: 55, lng: -3, radius: 8 },
+                    { name: "South Africa", lat: -30, lng: 22, radius: 10 }
+                ];
+
+                for (let loc of locations) {
+                    const distance = Math.sqrt(Math.pow(lat - loc.lat, 2) + Math.pow(lng - loc.lng, 2));
+                    if (distance <= loc.radius) {
+                        return loc.name;
+                    }
+                }
+
+                // Fallback to hemisphere-based naming
+                const hemisphere = lat >= 0 ? "Northern" : "Southern";
+                const continent = lng >= -30 && lng <= 70 ? "Africa/Europe" : 
+                                 lng >= 70 && lng <= 180 ? "Asia/Pacific" :
+                                 lng >= -180 && lng <= -30 ? "Americas" : "Unknown";
+                
+                return `${hemisphere} ${continent}`;
+            }
+
+            getTimeAgo(timestamp) {
+                const now = Date.now();
+                const diff = now - timestamp;
+                const minutes = Math.floor(diff / 60000);
+                const hours = Math.floor(minutes / 60);
+                const days = Math.floor(hours / 24);
+
+                if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+                if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+                if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+                return 'Just now';
+            }
+
+            showStatus(message, type) {
+                const status = document.getElementById('status');
+                status.textContent = message;
+                status.className = `status ${type}`;
+                status.style.display = 'block';
+
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Initialize the app when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new ShakaMap();
+        });
+    </script>
+</body>
+</html>
