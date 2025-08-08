@@ -58,25 +58,7 @@
             overflow: hidden;
         }
 
-        .header::before {
-            content: '🌊';
-            position: absolute;
-            font-size: 100px;
-            opacity: 0.3;
-            top: -20px;
-            left: 50px;
-            animation: float 3s ease-in-out infinite;
-        }
 
-        .header::after {
-            content: '🏄‍♂️';
-            position: absolute;
-            font-size: 80px;
-            opacity: 0.3;
-            top: 10px;
-            right: 50px;
-            animation: float 3s ease-in-out infinite reverse;
-        }
 
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
@@ -107,28 +89,7 @@
             letter-spacing: 1px;
         }
 
-        .connection-status {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.9em;
-            font-family: 'Exo 2', sans-serif;
-            backdrop-filter: blur(10px);
-        }
 
-        .connection-status.connected {
-            background: rgba(40, 167, 69, 0.3);
-            color: #28a745;
-            border: 1px solid rgba(40, 167, 69, 0.5);
-        }
-
-        .connection-status.disconnected {
-            background: rgba(220, 53, 69, 0.3);
-            color: #dc3545;
-            border: 1px solid rgba(220, 53, 69, 0.5);
-        }
 
         .map-container {
             position: relative;
@@ -150,6 +111,69 @@
             text-align: center;
             background: rgba(255, 255, 255, 0.02);
             backdrop-filter: blur(10px);
+        }
+
+        .message-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px 20px;
+            margin: 20px auto;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-family: 'Exo 2', sans-serif;
+            font-size: 1.1em;
+            text-align: center;
+            transition: all 0.3s ease;
+            display: block;
+        }
+
+        .message-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+            font-style: italic;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: rgba(102, 126, 234, 0.8);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .char-counter {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 5px;
+            font-family: 'Exo 2', sans-serif;
+        }
+
+        .char-counter.warning {
+            color: #ffa500;
+        }
+
+        .char-counter.error {
+            color: #ff6b6b;
+        }
+
+        .hunter-image {
+            width: 100%;
+            max-width: 300px;
+            height: 400px;
+            border-radius: 20px;
+            border: 3px solid rgba(102, 126, 234, 0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            object-fit: cover;
+        }
+
+        .hunter-image:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
         }
 
         .shaka-button {
@@ -491,9 +515,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="connection-status" id="connectionStatus">🔌 Connecting...</div>
             <h1>🤙 Hunter's Friends 🤙</h1>
-            <p class="subtitle">Send shakas from around the world!</p>
         </div>
 
         <div class="map-container">
@@ -501,6 +523,15 @@
         </div>
 
         <div class="controls">
+            <input 
+                type="text" 
+                id="shakaMessage" 
+                class="message-input" 
+                placeholder="Add a fun message with your shaka!"
+                maxlength="50"
+            >
+            <div class="char-counter" id="charCounter">0/50 characters</div>
+            
             <button class="shaka-button" id="shakaButton">
                 <span>🤙 Send One Shaka! 🤙</span>
             </button>
@@ -508,40 +539,21 @@
         </div>
         
         <div class="about-section">
-            <h2>About Hunter 🌟</h2>
+            <h2>Who is Hunter? </h2>
             <div class="about-content">
                 <div class="about-text">
-                    <p>Meet Hunter, the coolest 7-year-old on the planet! 🚀 Hunter loves adventures, making new friends from around the world, and spreading good vibes with shakas!</p>
+                    <p>Meet Hunter, Hunter loves making new friends from around the world and spreading the aloha spirit!</p>
                     
-                    <p>When he's not busy being awesome, Hunter enjoys surfing the waves 🏄‍♂️, exploring new places 🗺️, and sharing smiles with everyone he meets. His dream is to connect with kids and friends from every corner of the world!</p>
+                    <p>Hunter enjoys taekwondo🥋, hockey🏒 , baseball⚾️, basketball🏀, robotics🤖, hiking🥾, off-roading👣, surfing 🏄‍♂️, going to the zoo🐒 and sharing smiles with everyone he meets!</p>
                     
-                    <p>This website is Hunter's special place where he can see all the amazing locations where his friends send shakas. Every 🤙 on the map represents a new friend and a new connection!</p>
+                    <p>This website is Hunter's place where he can see all the amazing locations where his friends have been. Every 🤙 on the map represents one of Hunter's friends that is spreading the aloha spirit!</p>
                     
-                    <div class="fun-facts">
-                        <h3>🎉 Fun Facts About Hunter:</h3>
-                        <ul>
-                            <li>🎂 Just turned 7 years old!</li>
-                            <li>🏄‍♂️ Started surfing when he was 5</li>
-                            <li>🌍 Wants to visit every country someday</li>
-                            <li>🤙 Invented his own special shaka dance</li>
-                            <li>🐢 Loves sea turtles and ocean animals</li>
-                        </ul>
-                    </div>
+            
                 </div>
                 
                 <div class="about-images">
-                    <div class="image-placeholder">
-                        <div class="placeholder-icon">📸</div>
-                        <p>Hunter surfing his first wave</p>
-                    </div>
-                    <div class="image-placeholder">
-                        <div class="placeholder-icon">🏖️</div>
-                        <p>Beach adventure with friends</p>
-                    </div>
-                    <div class="image-placeholder">
-                        <div class="placeholder-icon">🤙</div>
-                        <p>Hunter's signature shaka pose</p>
-                    </div>
+                    <img src="hunter-photo.jpg" alt="Hunter's Photo" class="hunter-image" onerror="this.style.display='none';">
+                    
                 </div>
             </div>
         </div>
@@ -557,13 +569,10 @@
                 <h4>🌊 Connect</h4>
                 <p>Send a shaka and join the global friendship map!</p>
             </div>
-            <div class="footer-section">
-                <h4>🏄‍♂️ Adventure</h4>
-                <p>Life's better when you're having fun and making friends!</p>
-            </div>
+
         </div>
         <div class="footer-bottom">
-            <p>© 2025 Hunter's Friends | Made with ❤️ and lots of aloha spirit!</p>
+            <p>© 2025 Hunter's Friends | Made by Uncle Chico</p>
         </div>
     </footer>
 
@@ -601,12 +610,10 @@
 
                 this.socket.on('connect', () => {
                     console.log('🤙 Connected to server');
-                    this.updateConnectionStatus(true);
                 });
 
                 this.socket.on('disconnect', () => {
                     console.log('👋 Disconnected from server');
-                    this.updateConnectionStatus(false);
                 });
 
                 this.socket.on('new-shaka', (shaka) => {
@@ -621,16 +628,7 @@
                 });
             }
 
-            updateConnectionStatus(connected) {
-                const status = document.getElementById('connectionStatus');
-                if (connected) {
-                    status.textContent = '🟢 Live';
-                    status.className = 'connection-status connected';
-                } else {
-                    status.textContent = '🔴 Offline';
-                    status.className = 'connection-status disconnected';
-                }
-            }
+
 
             async loadShakas() {
                 try {
@@ -653,6 +651,43 @@
                 document.getElementById('shakaButton').addEventListener('click', () => {
                     this.sendShaka();
                 });
+
+                // Message input character counter and profanity filter
+                const messageInput = document.getElementById('shakaMessage');
+                const charCounter = document.getElementById('charCounter');
+                
+                messageInput.addEventListener('input', (e) => {
+                    const length = e.target.value.length;
+                    charCounter.textContent = `${length}/50 characters`;
+                    
+                    if (length > 40) {
+                        charCounter.className = 'char-counter warning';
+                    } else if (length === 50) {
+                        charCounter.className = 'char-counter error';
+                    } else {
+                        charCounter.className = 'char-counter';
+                    }
+
+                    // Filter inappropriate content
+                    e.target.value = this.filterInappropriateContent(e.target.value);
+                });
+            }
+
+            filterInappropriateContent(text) {
+                // Kid-friendly content filter - blocks common inappropriate words
+                const inappropriateWords = [
+                    'stupid', 'dumb', 'hate', 'shut up', 'shutup', 'idiot', 'loser', 'sucks',
+                    'damn', 'hell', 'crap', 'poop', 'fart', 'butt', 'pee', 'gross',
+                    // Add more as needed, but keep it age-appropriate for 7-year-olds
+                ];
+                
+                let filteredText = text;
+                inappropriateWords.forEach(word => {
+                    const regex = new RegExp(word, 'gi');
+                    filteredText = filteredText.replace(regex, '***');
+                });
+                
+                return filteredText;
             }
 
             sendShaka() {
@@ -703,6 +738,16 @@
 
             async processShakaRequest(coords) {
                 const button = document.getElementById('shakaButton');
+                const messageInput = document.getElementById('shakaMessage');
+                const message = messageInput.value.trim() || null;
+                
+                // Add privacy protection - randomly offset coordinates within ~0.01 degrees (roughly 1km)
+                const privacyOffset = 0.005; // ~500 meters
+                const protectedCoords = {
+                    lat: coords.lat + (Math.random() - 0.5) * privacyOffset,
+                    lng: coords.lng + (Math.random() - 0.5) * privacyOffset
+                };
+                
                 button.innerHTML = '<span><div class="loading"></div>Sending shaka...</span>';
 
                 try {
@@ -714,9 +759,10 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            latitude: coords.lat,
-                            longitude: coords.lng,
-                            locationName: locationName
+                            latitude: protectedCoords.lat,
+                            longitude: protectedCoords.lng,
+                            locationName: locationName,
+                            message: message
                         })
                     });
 
@@ -728,10 +774,14 @@
                     this.lastShakaId = newShaka.id; // Track our own shaka
                     
                     button.innerHTML = '<span>🤙 Send One Shaka! 🤙</span>';
+                    messageInput.value = ''; // Clear the message
+                    document.getElementById('charCounter').textContent = '0/50 characters';
+                    document.getElementById('charCounter').className = 'char-counter';
+                    
                     this.showStatus('🤙 Shaka sent successfully! Aloha! 🌺', 'success');
 
-                    // Zoom to the new shaka
-                    this.map.setView([newShaka.lat, newShaka.lng], Math.max(this.map.getZoom(), 8));
+                    // Zoom to the new shaka (use original coords for centering)
+                    this.map.setView([coords.lat, coords.lng], Math.max(this.map.getZoom(), 8));
 
                 } catch (error) {
                     console.error('Error sending shaka:', error);
@@ -751,11 +801,13 @@
                 const marker = L.marker([shaka.lat, shaka.lng], { icon: shakaIcon }).addTo(this.map);
                 
                 const timeAgo = this.getTimeAgo(shaka.timestamp);
+                const messageDisplay = shaka.message ? `<br><em>"${shaka.message}"</em>` : '';
+                
                 marker.bindPopup(`
                     <div class="shaka-popup">
                         <div class="shaka-emoji">🤙</div>
-                        <strong>Shaka from ${shaka.locationName || 'Unknown Location'}!</strong><br>
-                        <em>${timeAgo}</em>
+                        <strong>Shaka from ${shaka.locationName || 'Unknown Location'}!</strong>${messageDisplay}<br>
+                        <small>${timeAgo}</small>
                     </div>
                 `);
             }
@@ -821,4 +873,3 @@
     </script>
 </body>
 </html>
-
